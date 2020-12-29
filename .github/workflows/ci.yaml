@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04]
-        go: [1.13, 1.12]
+        go: [1.13]
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
@@ -33,3 +33,22 @@ jobs:
     - name: Test
       run: |
         go test -cover -race ./...
+    - name: Binaries
+      run: |
+        go build ./binaries/seesaw_cli
+        go build ./binaries/seesaw_ecu
+        go build ./binaries/seesaw_engine
+        go build ./binaries/seesaw_ha
+        go build ./binaries/seesaw_healthcheck
+        go build ./binaries/seesaw_ncc
+        go build ./binaries/seesaw_watchdog
+        tar czf seesaw-linux-amd64.tar.gz seesaw_*
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        overwrite: true
+        file_glob: true
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: seesaw-linux-amd64.tar.gz
+        asset_name: ${{ matrix.os }}
+        tag: ${{ github.ref }}
